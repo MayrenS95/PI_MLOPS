@@ -132,3 +132,32 @@ def get_director(nombre_director:str):
     'budget_pelicula':lista_budget, 'revenue_pelicula':lista_revenue
             }
         
+@app.get('/recomendacion/{titulo}')
+def recomendacion(titulo:str):
+    '''Ingresas un nombre de pelicula y te recomienda las similares en una lista'''
+    df = df_movies_final.loc[0:4000]
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    tfidf = TfidfVectorizer(stop_words='english')
+    df['genres'] = df['genres'].fillna('')
+    tfidf_matrix = tfidf.fit_transform(df['genres'])
+    from sklearn.metrics.pairwise import linear_kernel
+
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+    indices = pd.Series(df.index, index=df['title']).drop_duplicates()
+
+
+    def recomendation(title, cosine_sim=cosine_sim):
+        idx = indices[title]
+
+        sim_scores = list(enumerate(cosine_sim[idx]))
+
+        sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+
+        sim_scores = sim_scores[1:6]
+
+        movie_indices = [i[0] for i in sim_scores]
+
+        return df['title'].iloc[movie_indices]
+    
+    respuesta = recomendation(titulo)
+    return {'lista recomendada': respuesta}
