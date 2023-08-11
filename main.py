@@ -13,6 +13,7 @@ df_movies_final = pd.read_csv(url_csv)
 #instanciando la función
 app = FastAPI()
 
+
 #desarrollando la función de consulta idiomas
 @app.get('/peliculas_idioma/{idioma}')
 def peliculas_idioma(idioma:str):
@@ -75,7 +76,7 @@ def productoras_exitosas(productora:str):
     df = df_movies_final['production_companies'].apply(ast.literal_eval)
     for i in range(len(df)):
         for n in df[i]:
-            if n == productora:
+            if n.lstrip() == productora:
                 revenue_total += df_movies_final['revenue'][i]
                 cantidad += 1
     
